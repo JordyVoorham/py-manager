@@ -1,4 +1,4 @@
-# Flask Application
+# PY_MANAGER
 
 ![Blueprint Machine](https://github.com/JordyVoorham/py-manager/blob/main/static/img/Blueprint_machine.png)
 
