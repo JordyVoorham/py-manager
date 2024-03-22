@@ -1,5 +1,4 @@
 import os                                                             # Operating system functions
-import uvicorn                                                        # Asynchronous Server Gateway Interface server
 import subprocess                                                     # Subprocess management
 from flask import Flask, render_template, request, redirect, url_for  # Flask framework
 from werkzeug.utils import secure_filename                            # Secure file uploads
@@ -14,6 +13,20 @@ logging.basicConfig(format='[%(asctime)s] [%(levelname)s   ] %(name)s: %(message
 
 # Dictionary to store project processes
 project_processes = {}
+
+
+def create_virtualenv(project_directory):
+    """
+    Create a virtual environment if it doesn't exist and install required dependencies.
+    """
+    venv_path = os.path.join(project_directory, '.venv')
+    if not os.path.exists(venv_path):
+        subprocess.run(['python', '-m', 'venv', venv_path], check=True)
+
+        # Install required packages from requirements.txt
+        requirements_file = os.path.join(project_directory, 'requirements.txt')
+        if os.path.exists(requirements_file):
+            subprocess.run([os.path.join(venv_path, 'Scripts', 'pip'), 'install', '-r', requirements_file], check=True)
 
 
 @app.route('/')
@@ -76,9 +89,11 @@ def view_project(project_name):
 
 @app.route('/start_project/<project_name>', methods=['GET'])
 def start_project(project_name):
-    # Assuming your projects are stored in a directory named 'projects'
     projects_directory = os.path.join('projects')
     project_directory = os.path.join(projects_directory, project_name)
+
+    # Create virtual environment and install dependencies
+    create_virtualenv(project_directory)
 
     # Activate the virtual environment and execute main.py
     activate_cmd = os.path.join(project_directory, '.venv', 'Scripts', 'activate')
@@ -115,4 +130,4 @@ def stop_project(project_name):
 
 
 if __name__ == '__main__':
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    app.run()
