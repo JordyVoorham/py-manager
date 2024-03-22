@@ -1,0 +1,12 @@
+.card {
+    margin-bottom: 20px;
+}
+.running {
+    background-color: #ffb74d;
+}
+.done {
+    background-color: #7fe04b;
+}
+.crashed {
+    background-color: #ff4e39;
+}
