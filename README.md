@@ -1,6 +1,6 @@
 # Flask Application
 
-![Blueprint Machine](https://github.com/JordyVoorham/py-manager/blob/master/static/img/Blueprint_machine.png)
+![Blueprint Machine](https://github.com/JordyVoorham/py-manager/blob/main/static/img/Blueprint_machine.png)
 
 ## Description
 
