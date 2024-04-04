@@ -1,56 +1,48 @@
-import os                                                             # Operating system functions
-import subprocess                                                     # Subprocess management
-from flask import Flask, render_template, request, redirect, url_for  # Flask framework
-from werkzeug.utils import secure_filename                            # Secure file uploads
-import zipfile                                                        # Zip file handling
-import logging                                                        # Logging functionality
+import os                                                                       # Operating system functions
+import subprocess                                                               # Subprocess management
+from flask import Flask, render_template, request, redirect, url_for, jsonify   # Flask framework
+from werkzeug.utils import secure_filename                                      # Secure file uploads
+import zipfile                                                                  # Zip file handling
+import logging                                                                  # Logging functionality
 
 
 app = Flask(__name__)
 
 # Configure the built-in Python logging module
-logging.basicConfig(format='[%(asctime)s] [%(levelname)s   ] %(name)s: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
+logging.basicConfig(level=logging.INFO, format='[%(asctime)s] [%(levelname)s   ] %(name)s: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
 
 # Dictionary to store project processes
 project_processes = {}
 
 
-def create_virtualenv(project_directory):
-    """
-    Create a virtual environment if it doesn't exist and install required dependencies.
-    """
-    venv_path = os.path.join(project_directory, '.venv')
-    if not os.path.exists(venv_path):
-        subprocess.run(['python', '-m', 'venv', venv_path], check=True)
-
-        # Install required packages from requirements.txt
-        requirements_file = os.path.join(project_directory, 'requirements.txt')
-        if os.path.exists(requirements_file):
-            subprocess.run([os.path.join(venv_path, 'Scripts', 'pip'), 'install', '-r', requirements_file], check=True)
-
-
 @app.route('/')
 def index():
+
     return render_template('index.html')
 
 
 @app.route('/projects', methods=['GET', 'POST'])
 def projects():
     display_projects = os.listdir('projects')
-    running_projects = []
-    done_projects = []
-    crashed_projects = []
+    running_projects, done_projects, crashed_projects = get_project_status(project_processes)
 
-    for project_name, process in project_processes.items():
-        if process.poll() is None:
-            running_projects.append(project_name)
-        elif process.poll() == 0:
-            done_projects.append(project_name)
-        else:
-            crashed_projects.append(project_name)
+    return render_template(template_name_or_list='projects.html',
+                           display_projects=display_projects,
+                           running_projects=running_projects,
+                           crashed_projects=crashed_projects,
+                           done_projects=done_projects)
 
-    return render_template('projects.html', display_projects=display_projects, running_projects=running_projects,
-                           crashed_projects=crashed_projects, done_projects=done_projects)
+
+@app.route('/project/<project_name>')
+def view_project(project_name):
+    running_projects, done_projects, crashed_projects = get_project_status(project_processes)
+
+    return render_template(template_name_or_list='view_project.html',
+                           project_name=project_name,
+                           running_projects=running_projects,
+                           crashed_projects=crashed_projects,
+                           done_projects=done_projects
+                           )
 
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -77,16 +69,6 @@ def upload():
     return render_template('upload.html')
 
 
-@app.route('/project/<project_name>')
-def view_project(project_name):
-    project_folder = os.path.join('projects', project_name)
-    if os.path.exists(project_folder):
-        project_contents = os.listdir(project_folder)
-        return render_template('view_project.html', project_name=project_name, project_contents=project_contents)
-    else:
-        return "Project not found."
-
-
 @app.route('/start_project/<project_name>', methods=['GET'])
 def start_project(project_name):
     projects_directory = os.path.join('projects')
@@ -105,7 +87,7 @@ def start_project(project_name):
     # Store the project process in the dictionary
     project_processes[project_name] = project_process
 
-    return 'Project started successfully!'
+    return redirect(url_for('view_project', project_name=project_name))
 
 
 @app.route('/stop_project/<project_name>', methods=['GET'])
@@ -124,9 +106,52 @@ def stop_project(project_name):
         # Remove the project process from the dictionary
         del project_processes[project_name]
 
-        return 'Project stopped successfully!'
-    else:
-        return 'Project is not currently running!'
+    return redirect(url_for('view_project', project_name=project_name))
+
+
+
+@app.route('/project/<project_name>/log')
+def get_project_log(project_name):
+    log_directory = os.path.join('projects', project_name, 'logs')
+    log_content = ""
+    if os.path.exists(log_directory):
+        log_files = [f for f in os.listdir(log_directory) if f.endswith('.log')]
+        if log_files:
+            latest_log_file = max(log_files)
+            with open(os.path.join(log_directory, latest_log_file), 'r') as f:
+                log_content = f.read()
+
+    return jsonify(log_content=log_content)
+
+
+def create_virtualenv(project_directory):
+    """
+    Create a virtual environment if it doesn't exist and install required dependencies.
+    """
+    venv_path = os.path.join(project_directory, '.venv')
+    if not os.path.exists(venv_path):
+        subprocess.run(['python', '-m', 'venv', venv_path], check=True)
+
+        # Install required packages from requirements.txt
+        requirements_file = os.path.join(project_directory, 'requirements.txt')
+        if os.path.exists(requirements_file):
+            subprocess.run([os.path.join(venv_path, 'Scripts', 'pip'), 'install', '-r', requirements_file], check=True)
+
+
+def get_project_status(processes):
+    running_projects = []
+    done_projects = []
+    crashed_projects = []
+
+    for project_name, process in processes.items():
+        if process.poll() is None:
+            running_projects.append(project_name)
+        elif process.poll() == 0:
+            done_projects.append(project_name)
+        else:
+            crashed_projects.append(project_name)
+
+    return running_projects, done_projects, crashed_projects
 
 
 if __name__ == '__main__':
