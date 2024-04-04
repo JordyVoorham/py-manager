@@ -5,7 +5,6 @@ from datetime import datetime
 
 def main():
     setup_log()
-    print("Heartbeat")
     #raise Exception("Intentional crash")
     logging.info("logging heartbeat")
 

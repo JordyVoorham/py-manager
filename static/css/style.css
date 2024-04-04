@@ -5,7 +5,6 @@ body{
 .navbar{
     background: #202225; /*dark dark*/
     color: white;
-
 }
 .card-link {
     text-decoration: none; /* Remove underline from all text within card links */
@@ -13,12 +12,34 @@ body{
 .nav-link{
     color: white;
 }
+.project {
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.project:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 2px 17px #d5e1fd;
+}
+.python-logo {
+    width: 30px; /* Adjust the width as needed */
+    height: auto; /* Maintain aspect ratio */
+}
 .running {
-    background-color: #ffb74d;
+    background-color: #f69e3f;
 }
 .done {
-    background-color: #4ac40d;
+    background-color: #60d329;
 }
 .crashed {
     background-color: #ff4e39;
 }
+.card {
+    background-color: #ffffff;
+}
+
+
