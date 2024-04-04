@@ -39,10 +39,6 @@ Py Manager provides an intuitive interface to manage your Python projects. Simpl
 
 We welcome contributions to Py Manager! If you encounter any bugs, have feature requests, or want to contribute improvements, please submit a pull request or open an issue on GitHub.
 
-## License
-
-This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
-
 ## Contact
 
 For any questions, feedback, or inquiries, feel free to contact us at [example@example.com](mailto:example@example.com).
